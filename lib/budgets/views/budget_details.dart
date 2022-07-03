@@ -1,21 +1,19 @@
 import 'package:cape_flutter/common/app_color.dart';
 import 'package:cape_flutter/common/app_font.dart';
-import 'package:cape_flutter/income/controller/income_categories_controller.dart';
-import 'package:cape_flutter/income/view/income_categories.dart';
+import 'package:cape_flutter/debt/model/debt.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
+import '../../pages/budget/budget_controller.dart';
 import '../../pages/home/home_page.dart';
-import '../controller/account_controller.dart';
+import '../../plan/model/plan.dart';
 
-class AccountDetails extends GetView<AccountController> {
-  String accountName = Get.arguments[0];
-  int accountBalance = Get.arguments[1];
-  String accountId = Get.arguments[2];
+class BudgetDetails extends StatelessWidget {
+  String budgetTitle = "Bankbca";
+  double budgetAmount = 2140000;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,7 @@ class AccountDetails extends GetView<AccountController> {
       designSize: Size(375, 812),
     );
 
-    return GetBuilder<AccountController>(
+    return GetBuilder<BudgetController>(
       builder: (controller) {
         return ScreenTypeLayout(
           breakpoints: ScreenBreakpoints(
@@ -33,34 +31,6 @@ class AccountDetails extends GetView<AccountController> {
             watch: 300,
           ),
           mobile: Scaffold(
-            floatingActionButton: SpeedDial(
-              animatedIcon: AnimatedIcons.menu_close,
-              children: [
-                SpeedDialChild(
-                  child: Icon(CupertinoIcons.arrow_up_circle),
-                  label: "Add Expense",
-                  backgroundColor: AppColor.red100,
-                  onTap: () {
-                    // Pick expense category
-                  },
-                ),
-                SpeedDialChild(
-                  child: Icon(CupertinoIcons.arrow_down_circle),
-                  label: "Add Income",
-                  backgroundColor: AppColor.green100,
-                  onTap: () {
-                    // Pick income category
-                    Get.put(IncomeCategoriesController(
-                      accountId: accountId,
-                      userId: controller.userId,
-                    ));
-                    Get.to(
-                      () => const IncomeCategoriesList(),
-                    );
-                  },
-                ),
-              ],
-            ),
             backgroundColor: AppColor.light100,
             body: SingleChildScrollView(
               padding: EdgeInsets.zero,
@@ -74,23 +44,23 @@ class AccountDetails extends GetView<AccountController> {
                     height: 10.w,
                   ),
                   PageHeader(
-                    title: "$accountName",
-                    balance: accountBalance,
+                    title: "$budgetTitle",
+                    balance: budgetAmount,
                     icon: Icon(CupertinoIcons.money_dollar_circle_fill),
                   ),
                   TitleOfSubElement(
-                    title: "Recent Income",
+                    title: "Debts",
                     onSeeAll: () {},
                   ),
-                  IncomeListTile(
-                    incomeList: controller.incomeList,
+                  DebtListTile(
+                    debtList: controller.debtList,
                   ),
                   TitleOfSubElement(
-                    title: "Recent Expense",
+                    title: "Plans",
                     onSeeAll: () {},
                   ),
-                  ExpenseListTile(
-                    expenseList: controller.expenseList,
+                  PlanListTile(
+                    planList: controller.planList,
                   ),
                 ],
               ),
@@ -111,7 +81,7 @@ class PageHeader extends StatelessWidget {
       : super(key: key);
 
   final String title;
-  final int balance;
+  final double balance;
   final Icon icon;
 
   @override
@@ -149,6 +119,66 @@ class PageHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class DebtListTile extends StatelessWidget {
+  const DebtListTile({
+    Key? key,
+    required this.debtList,
+    this.icon = const Icon(CupertinoIcons.circle_fill),
+  }) : super(key: key);
+
+  final List<Debt> debtList;
+  final Icon icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: debtList.length,
+      itemBuilder: (context, index) {
+        return ListCard(
+          title: debtList[index].data!.debtTitle!,
+          subtitle: debtList[index].data!.debtDetails!,
+          amount: debtList[index].data!.debtAmount!,
+          icon: icon,
+          index: index,
+        );
+      },
+    );
+  }
+}
+
+class PlanListTile extends StatelessWidget {
+  const PlanListTile({
+    Key? key,
+    required this.planList,
+    this.icon = const Icon(CupertinoIcons.circle_fill),
+  }) : super(key: key);
+
+  final List<Plan> planList;
+  final Icon icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: planList.length,
+      itemBuilder: (context, index) {
+        return ListCard(
+          title: planList[index].data!.planTitle!,
+          subtitle: planList[index].data!.planDetails!,
+          amount: planList[index].data!.targetAmount!,
+          icon: icon,
+          index: index,
+        );
+      },
     );
   }
 }

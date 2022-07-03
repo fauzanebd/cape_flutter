@@ -1,4 +1,9 @@
+import 'package:cape_flutter/accounts/controller/account_controller.dart';
+import 'package:cape_flutter/accounts/controller/add_account_controller.dart';
+import 'package:cape_flutter/accounts/models/account.dart';
+import 'package:cape_flutter/accounts/views/add_account.dart';
 import 'package:cape_flutter/common/app_font.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -17,44 +22,58 @@ class TransactionPage extends GetView<TransactionController> {
       context,
       designSize: const Size(375, 812),
     );
-    return ScreenTypeLayout(
-      breakpoints: const ScreenBreakpoints(
-        tablet: 600,
-        desktop: 950,
-        watch: 300,
-      ),
-      mobile: Scaffold(
-        backgroundColor: AppColor.light100,
-        body: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const TitleOfSubElement(
-                title: "Accounts",
-              ),
-              Container(
-                padding: EdgeInsets.only(
-                  right: 10.w,
-                  left: 10.w,
-                  top: 10.w,
-                  bottom: 10.w,
-                ),
-                child: GridOfAccounts(
-                  accounts: [
-                    "Account 1",
-                    "Account 2",
-                    "Account 3",
-                    "Account 4"
+    return GetBuilder<TransactionController>(
+      builder: (controller) {
+        return ScreenTypeLayout(
+          breakpoints: const ScreenBreakpoints(
+            tablet: 600,
+            desktop: 950,
+            watch: 300,
+          ),
+          mobile: Scaffold(
+            backgroundColor: AppColor.light100,
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                //add account
+                Get.put(AddAccountPageController(user: controller.user));
+                Get.to(() => const AddAccountPage());
+              },
+              backgroundColor: AppColor.green100,
+              child: const Icon(CupertinoIcons.add),
+            ),
+            body: RefreshIndicator(
+              onRefresh: () async {
+                await controller.fetchAccounts();
+              },
+              child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const TitleOfSubElement(
+                      title: "Accounts",
+                    ),
+                    Container(
+                      padding: EdgeInsets.only(
+                        right: 10.w,
+                        left: 10.w,
+                        top: 10.w,
+                        bottom: 10.w,
+                      ),
+                      child: GridOfAccounts(
+                        accounts: controller.accountList,
+                        uid: controller.user.uid,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
 
     // return const Scaffold(
@@ -69,9 +88,11 @@ class GridOfAccounts extends StatelessWidget {
   const GridOfAccounts({
     Key? key,
     required this.accounts,
+    required this.uid,
   });
 
-  final List<String> accounts;
+  final List<Account> accounts;
+  final String uid;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +115,7 @@ class GridOfAccounts extends StatelessWidget {
           if (index < accounts.length) {
             return AccountCard(
               account: accounts[index],
+              uid: uid,
             );
           } else {
             return const SizedBox();
@@ -108,9 +130,11 @@ class AccountCard extends StatelessWidget {
   const AccountCard({
     Key? key,
     required this.account,
+    required this.uid,
   }) : super(key: key);
 
-  final String account;
+  final Account account;
+  final String uid;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +143,15 @@ class AccountCard extends StatelessWidget {
       child: Material(
         child: InkWell(
           onTap: () {
-            Get.to(() => AccountDetails());
+            Get.put(AccountController(account.id!, uid));
+            Get.to(
+              () => AccountDetails(),
+              arguments: [
+                account.data!.accountName!,
+                account.data!.accountBalance!,
+                account.id!,
+              ],
+            );
           },
           child: Ink(
             decoration: BoxDecoration(
@@ -128,7 +160,7 @@ class AccountCard extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                "$account",
+                account.data!.accountName!,
                 style: AppFont.body2(fontColor: AppColor.light100),
               ),
             ),

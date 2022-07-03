@@ -1,3 +1,5 @@
+import 'package:cape_flutter/pages/dashboard/dashboard_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 import '../../api/api_service.dart';
@@ -5,7 +7,11 @@ import '../../debt/model/debt.dart';
 import '../../plan/model/plan.dart';
 
 class BudgetController extends GetxController {
-  final String title = 'Budget page';
+  final String title = "Budget page";
+  final DashboardController dashboardController =
+      Get.find<DashboardController>();
+
+  User user = Get.find<DashboardController>().user;
 
   var isLoading = true.obs;
   var debtList = <Debt>[].obs;
@@ -13,13 +19,14 @@ class BudgetController extends GetxController {
 
   @override
   void onInit() {
-    super.onInit();
+    fetchDebts(user.uid);
+    fetchPlans(user.uid);
   }
 
-  Future<void> fetchDebts(String userId) async {
+  Future<void> fetchDebts(String uid) async {
     try {
       isLoading(true);
-      var debt = await ApiService.fetchDebts(userId);
+      var debt = await ApiService.fetchDebts(uid);
       if (debt != null) {
         debtList.assignAll(debt);
       }
@@ -29,10 +36,10 @@ class BudgetController extends GetxController {
     }
   }
 
-  Future<void> fetchPlans(String userId) async {
+  Future<void> fetchPlans(String uid) async {
     try {
       isLoading(true);
-      var plan = await ApiService.fetchPlans(userId);
+      var plan = await ApiService.fetchPlans(uid);
       if (plan != null) {
         planList.assignAll(plan);
       }

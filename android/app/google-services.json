@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "876070741712-f2ph6k901c6b3hpm6anh64b8iesuoeo0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.donquixote.cape_flutter",
+            "certificate_hash": "b95e428b4800589167af02d492f255411a1ef82e"
+          }
+        },
+        {
           "client_id": "876070741712-hb446hg2qm71m5mnm51ovqemh0qfjv8c.apps.googleusercontent.com",
           "client_type": 3
         }

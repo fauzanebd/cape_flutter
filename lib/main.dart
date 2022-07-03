@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cape_flutter/routes/app_pages.dart';
 import 'package:get/get.dart';
 
+import 'auth/bindings/load_auth_binding.dart';
 import 'pages/dashboard/dashboard_page.dart';
 
 void main() async {
@@ -14,6 +15,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  LoadAuthBinding().dependencies();
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: "Cape",
-      initialRoute: Routes.MAIN,
+      initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,
       theme: ThemeData(
         fontFamily: "Inter",

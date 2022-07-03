@@ -1,12 +1,17 @@
 import 'package:cape_flutter/common/app_color.dart';
 import 'package:cape_flutter/common/app_font.dart';
+import 'package:cape_flutter/income/model/income.dart';
+import 'package:cape_flutter/pages/dashboard/dashboard_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
+import '../../expense/model/expense.dart';
 import 'home_controller.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -14,43 +19,159 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    String userId = 'dknLjdodmqw&';
     ScreenUtil.init(
       context,
       designSize: const Size(375, 812),
     );
 
-    return ScreenTypeLayout(
-      breakpoints: const ScreenBreakpoints(
-        tablet: 600,
-        desktop: 950,
-        watch: 300,
-      ),
-      mobile: Scaffold(
-        backgroundColor: AppColor.light100,
-        // appBar: appBarCape,
-        body: SingleChildScrollView(
-          padding: EdgeInsets.zero,
-          physics: BouncingScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const AppBarWidget(),
-              TitleOfSubElement(
-                title: "Recent Income",
-                onSeeAll: () {},
+    User user = controller.user;
+
+    final appBarCape = AppBar(
+      backgroundColor: AppColor.light100,
+      // title: SvgPicture.asset('assets/icons/cape_logo.svg'),
+      elevation: 0,
+      leading: SizedBox(
+        width: 20.w,
+        height: 20.w,
+        child: Center(
+          child: TextButton(
+            onPressed: () {
+              // print("pergi ke profile");
+              // print(user.photoURL);
+              controller.dashboardController.logout();
+            },
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(
+                user.photoURL ??
+                    "https://e7.pngegg.com/pngimages/92/781/png-clipart-computer-icons-user-profile-avatar-avatar-heroes-profile-thumbnail.png",
               ),
-              TransactionListTile(),
-              TitleOfSubElement(
-                title: "Recent Expense",
-                onSeeAll: () {},
-              ),
-              TransactionListTile(),
-            ],
+            ),
           ),
+          // child: const Icon(
+          //   CupertinoIcons.person_alt_circle,
+          //   color: AppColor.dark100,
+          //   size: 40,
+          // ),
         ),
       ),
+      leadingWidth: 70.w,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Expanded(
+            flex: 10,
+            child: SizedBox(),
+          ),
+          SvgPicture.asset('assets/icons/cape_logo.svg'),
+          const Expanded(
+            flex: 0,
+            child: SizedBox(),
+          ),
+        ],
+      ),
+      centerTitle: true,
+    );
+
+    return GetBuilder<HomeController>(
+      builder: (controller) {
+        return ScreenTypeLayout(
+          breakpoints: const ScreenBreakpoints(
+            tablet: 600,
+            desktop: 950,
+            watch: 300,
+          ),
+          mobile: Scaffold(
+            backgroundColor: AppColor.light100,
+            appBar: appBarCape,
+            floatingActionButton: SpeedDial(
+              animatedIcon: AnimatedIcons.menu_close,
+              children: [
+                SpeedDialChild(
+                  child: Icon(CupertinoIcons.arrow_up_circle),
+                  label: "Add Expense",
+                  backgroundColor: AppColor.red100,
+                  onTap: () {},
+                ),
+                SpeedDialChild(
+                  child: Icon(CupertinoIcons.arrow_down_circle),
+                  label: "Add Income",
+                  backgroundColor: AppColor.green100,
+                ),
+              ],
+            ),
+            body: RefreshIndicator(
+              onRefresh: () async {
+                await controller.fetchAccounts(userId);
+                await controller.fetchIncomes(userId);
+                await controller.fetchExpenses(userId);
+              },
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                physics: BouncingScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                // child: Column(
+                //   mainAxisAlignment: MainAxisAlignment.start,
+                //   mainAxisSize: MainAxisSize.min,
+                //   children: <Widget>[
+                //     const AppBarWidget(),
+                //     TitleOfSubElement(
+                //       title: "Recent Income",
+                //       onSeeAll: () {},
+                //     ),
+                //     IncomeListTile(
+                //       incomeList: controller.incomeList,
+                //     ),
+                //     TitleOfSubElement(
+                //       title: "Recent Expense",
+                //       onSeeAll: () {},
+                //     ),
+                //     ExpenseListTile(
+                //       expenseList: controller.expenseList,
+                //     ),
+                //   ],
+                // ),
+                child: Obx(
+                  () {
+                    if (controller.accountList.isEmpty) {
+                      return Center(
+                        child: Text("Please create account first"),
+                      );
+                    } else if (controller.incomeList.isEmpty ||
+                        controller.expenseList.isEmpty) {
+                      return Center(
+                        child: Text("No Income or Expense"),
+                      );
+                    } else {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          const AppBarWidget(),
+                          TitleOfSubElement(
+                            title: "Recent Income",
+                            onSeeAll: () {},
+                          ),
+                          IncomeListTile(
+                            incomeList: controller.incomeList,
+                          ),
+                          TitleOfSubElement(
+                            title: "Recent Expense",
+                            onSeeAll: () {},
+                          ),
+                          ExpenseListTile(
+                            expenseList: controller.expenseList,
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -60,70 +181,91 @@ class TitleOfSubElement extends StatelessWidget {
     Key? key,
     required this.title,
     required this.onSeeAll,
+    this.disableSeeAllButton = false,
   }) : super(key: key);
 
   final String title;
   final onSeeAll;
+  final bool disableSeeAllButton;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 18.w,
-        right: 18.w,
-        top: 9.w,
-        bottom: 9.w,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Text(
-            title,
-            style: AppFont.title3(fontSize: 18.sp),
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(32.w),
-            child: Container(
-              width: 78,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: AppColor.violet20,
-              ),
-              child: TextButton(
-                onPressed: () {
-                  onSeeAll();
-                },
-                child: Center(
-                  child: Text(
-                    "See All",
-                    style: AppFont.body2(
-                      fontSize: 14.sp,
-                      fontColor: AppColor.violet100,
+    late Widget titleWidget;
+    if (!disableSeeAllButton) {
+      titleWidget = Padding(
+        padding: EdgeInsets.only(
+          left: 18.w,
+          right: 18.w,
+          top: 9.w,
+          bottom: 9.w,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              title,
+              style: AppFont.title3(fontSize: 18.sp),
+            ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(32.w),
+              child: Container(
+                width: 78,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: AppColor.violet20,
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    onSeeAll();
+                  },
+                  child: Center(
+                    child: Text(
+                      "See All",
+                      style: AppFont.body2(
+                        fontSize: 14.sp,
+                        fontColor: AppColor.violet100,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    } else {
+      titleWidget = Padding(
+        padding: EdgeInsets.only(
+          left: 18.w,
+          right: 18.w,
+          top: 9.w,
+          bottom: 9.w,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              title,
+              style: AppFont.title3(fontSize: 18.sp),
+            ),
+            Expanded(child: SizedBox())
+          ],
+        ),
+      );
+    }
+    return titleWidget;
   }
 }
 
-class TransactionListTile extends StatelessWidget {
-  const TransactionListTile({
+class IncomeListTile extends StatelessWidget {
+  const IncomeListTile({
     Key? key,
-    this.title = "",
-    this.subtitle = "",
+    required this.incomeList,
     this.icon = const Icon(CupertinoIcons.circle_fill),
-    this.amount = 0,
   }) : super(key: key);
 
-  final String title;
-  final String subtitle;
+  final List<Income> incomeList;
   final Icon icon;
-  final int amount;
 
   @override
   Widget build(BuildContext context) {
@@ -131,13 +273,43 @@ class TransactionListTile extends StatelessWidget {
       scrollDirection: Axis.vertical,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      itemCount: 4,
-      itemBuilder: (BuildContext context, int index) {
+      itemCount: incomeList.length,
+      itemBuilder: (context, index) {
         return ListCard(
-          title: "Beli ban",
-          subtitle: "Transportasi",
-          amount: 1000000,
-          icon: const Icon(CupertinoIcons.circle),
+          title: incomeList[index].data!.incomeTitle!,
+          subtitle: incomeList[index].data!.incomeDetails!,
+          amount: incomeList[index].data!.incomeAmount!,
+          icon: icon,
+          index: index,
+        );
+      },
+    );
+  }
+}
+
+class ExpenseListTile extends StatelessWidget {
+  const ExpenseListTile({
+    Key? key,
+    required this.expenseList,
+    this.icon = const Icon(CupertinoIcons.circle_fill),
+  }) : super(key: key);
+
+  final List<Expense> expenseList;
+  final Icon icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: expenseList.length,
+      itemBuilder: (context, index) {
+        return ListCard(
+          title: expenseList[index].data!.expenseTitle!,
+          subtitle: expenseList[index].data!.expenseDetails!,
+          amount: expenseList[index].data!.expenseAmount!,
+          icon: icon,
           index: index,
         );
       },
@@ -223,7 +395,7 @@ class AppBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 9.w, bottom: 9.w),
+      padding: EdgeInsets.only(bottom: 9.w),
       child: Container(
         width: double.infinity,
         height: 200.w,
@@ -357,41 +529,3 @@ class MainInfoBox extends StatelessWidget {
     );
   }
 }
-
-final appBarCape = AppBar(
-  backgroundColor: AppColor.dark100,
-  // title: SvgPicture.asset('assets/icons/cape_logo.svg'),
-  elevation: 0,
-  leading: SizedBox(
-    width: 20.w,
-    height: 20.w,
-    child: Center(
-      child: TextButton(
-        onPressed: () {
-          print("pergi ke profile");
-        },
-        child: const Icon(
-          CupertinoIcons.person_alt_circle,
-          color: AppColor.dark100,
-          size: 40,
-        ),
-      ),
-    ),
-  ),
-  leadingWidth: 70.w,
-  title: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: <Widget>[
-      const Expanded(
-        flex: 10,
-        child: SizedBox(),
-      ),
-      SvgPicture.asset('assets/icons/cape_logo.svg'),
-      const Expanded(
-        flex: 0,
-        child: SizedBox(),
-      ),
-    ],
-  ),
-  centerTitle: true,
-);
