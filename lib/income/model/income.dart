@@ -46,7 +46,7 @@ class Data {
   String? accountId;
   String? icId;
   String? userId;
-  int? incomeAmount;
+  String? incomeAmount;
   String? incomeTitle;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -55,7 +55,7 @@ class Data {
         accountId: json["account_id"],
         icId: json["ic_id"],
         userId: json["user_id"],
-        incomeAmount: json["income_amount"],
+        incomeAmount: json["income_amount"].toString(),
         incomeTitle: json["income_title"],
       );
 

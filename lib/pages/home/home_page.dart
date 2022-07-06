@@ -84,27 +84,11 @@ class HomePage extends GetView<HomeController> {
           mobile: Scaffold(
             backgroundColor: AppColor.light100,
             appBar: appBarCape,
-            floatingActionButton: SpeedDial(
-              animatedIcon: AnimatedIcons.menu_close,
-              children: [
-                SpeedDialChild(
-                  child: Icon(CupertinoIcons.arrow_up_circle),
-                  label: "Add Expense",
-                  backgroundColor: AppColor.red100,
-                  onTap: () {},
-                ),
-                SpeedDialChild(
-                  child: Icon(CupertinoIcons.arrow_down_circle),
-                  label: "Add Income",
-                  backgroundColor: AppColor.green100,
-                ),
-              ],
-            ),
             body: RefreshIndicator(
               onRefresh: () async {
-                await controller.fetchAccounts(userId);
-                await controller.fetchIncomes(userId);
-                await controller.fetchExpenses(userId);
+                await controller.fetchAccounts();
+                await controller.fetchIncomes();
+                await controller.fetchExpenses();
               },
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
@@ -131,41 +115,23 @@ class HomePage extends GetView<HomeController> {
                 //     ),
                 //   ],
                 // ),
-                child: Obx(
-                  () {
-                    if (controller.accountList.isEmpty) {
-                      return Center(
-                        child: Text("Please create account first"),
-                      );
-                    } else if (controller.incomeList.isEmpty ||
-                        controller.expenseList.isEmpty) {
-                      return Center(
-                        child: Text("No Income or Expense"),
-                      );
-                    } else {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          const AppBarWidget(),
-                          TitleOfSubElement(
-                            title: "Recent Income",
-                            onSeeAll: () {},
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    height: 500.w,
+                    child: Column(
+                      children: [
+                        Expanded(child: SizedBox()),
+                        Center(
+                          child: Text(
+                            "Stats will be here",
+                            style: AppFont.title3(),
                           ),
-                          IncomeListTile(
-                            incomeList: controller.incomeList,
-                          ),
-                          TitleOfSubElement(
-                            title: "Recent Expense",
-                            onSeeAll: () {},
-                          ),
-                          ExpenseListTile(
-                            expenseList: controller.expenseList,
-                          ),
-                        ],
-                      );
-                    }
-                  },
+                        ),
+                        Expanded(child: SizedBox()),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -278,7 +244,7 @@ class IncomeListTile extends StatelessWidget {
         return ListCard(
           title: incomeList[index].data!.incomeTitle!,
           subtitle: incomeList[index].data!.incomeDetails!,
-          amount: incomeList[index].data!.incomeAmount!,
+          amount: int.parse(incomeList[index].data!.incomeAmount!),
           icon: icon,
           index: index,
         );
@@ -308,7 +274,7 @@ class ExpenseListTile extends StatelessWidget {
         return ListCard(
           title: expenseList[index].data!.expenseTitle!,
           subtitle: expenseList[index].data!.expenseDetails!,
-          amount: expenseList[index].data!.expenseAmount!,
+          amount: int.parse(expenseList[index].data!.expenseAmount!),
           icon: icon,
           index: index,
         );

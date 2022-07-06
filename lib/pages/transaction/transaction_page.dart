@@ -1,3 +1,4 @@
+import 'package:cape_flutter/accounts/bindings/account_details_bindings.dart';
 import 'package:cape_flutter/accounts/controller/account_controller.dart';
 import 'package:cape_flutter/accounts/controller/add_account_controller.dart';
 import 'package:cape_flutter/accounts/models/account.dart';
@@ -143,14 +144,19 @@ class AccountCard extends StatelessWidget {
       child: Material(
         child: InkWell(
           onTap: () {
-            Get.put(AccountController(account.id!, uid));
+            // AccountDetailsBindings(
+            //   accountId: account.id!,
+            //   userId: uid,
+            // ).dependencies();
             Get.to(
               () => AccountDetails(),
-              arguments: [
-                account.data!.accountName!,
-                account.data!.accountBalance!,
-                account.id!,
-              ],
+              binding: AccountDetailsBindings(
+                accountId: account.id!,
+                userId: uid,
+                accountName: account.data!.accountName!,
+                accountBalance: int.parse(account.data!.accountBalance!),
+              ),
+              preventDuplicates: true,
             );
           },
           child: Ink(

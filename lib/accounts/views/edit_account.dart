@@ -1,12 +1,12 @@
-import 'package:cape_flutter/accounts/controller/add_account_controller.dart';
+import 'package:cape_flutter/accounts/controller/edit_account_controller.dart';
 import 'package:cape_flutter/common/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
-class AddAccountPage extends GetView<AddAccountPageController> {
-  const AddAccountPage({Key? key}) : super(key: key);
+class EditAccountPage extends GetView<EditAccountPageController> {
+  const EditAccountPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(
@@ -42,14 +42,14 @@ class AddAccountPage extends GetView<AddAccountPageController> {
                     decoration: InputDecoration(
                       fillColor: Colors.grey.shade100,
                       filled: true,
-                      hintText: 'Account Name',
+                      hintText: controller.originalAccountName,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text("Account Initial Balance"),
+                  Text("Account Balance"),
                   TextField(
                     controller: controller.accountBalanceController.value,
                     onChanged: (val) {
@@ -58,7 +58,7 @@ class AddAccountPage extends GetView<AddAccountPageController> {
                     decoration: InputDecoration(
                       fillColor: Colors.grey.shade100,
                       filled: true,
-                      hintText: 'Account Initial Balance',
+                      hintText: controller.originalAccountBalance.toString(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -81,10 +81,10 @@ class AddAccountPage extends GetView<AddAccountPageController> {
                     onPressed: () async {
                       // getting invoice
                       // await reservationDetailsController.goToPaymentPage();
-                      await controller.addAccount();
+                      await controller.updateAccount();
                     },
                     child: Text(
-                      'Add Account',
+                      'Edit Account',
                       style: TextStyle(
                         color: AppColor.light100,
                       ),

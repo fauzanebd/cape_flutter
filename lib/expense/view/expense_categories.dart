@@ -1,7 +1,7 @@
 import 'package:cape_flutter/common/app_color.dart';
-import 'package:cape_flutter/income/controller/add_income_controller.dart';
-import 'package:cape_flutter/income/model/income_category.dart';
-import 'package:cape_flutter/income/view/add_income.dart';
+import 'package:cape_flutter/expense/controller/add_expense_controller.dart';
+import 'package:cape_flutter/expense/model/expense_category.dart';
+import 'package:cape_flutter/expense/view/add_expense.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,17 +9,17 @@ import 'package:get/get.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
 import '../../common/app_font.dart';
-import '../controller/income_categories_controller.dart';
+import '../controller/expense_categories_controller.dart';
 
-class IncomeCategoriesList extends GetView<IncomeCategoriesController> {
-  const IncomeCategoriesList({Key? key}) : super(key: key);
+class ExpenseCategoriesList extends GetView<ExpenseCategoriesController> {
+  const ExpenseCategoriesList({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(
       context,
       designSize: Size(375, 812),
     );
-    return GetBuilder<IncomeCategoriesController>(
+    return GetBuilder<ExpenseCategoriesController>(
       builder: (controller) {
         var accountId = controller.accountId;
         var userId = controller.userId;
@@ -41,9 +41,9 @@ class IncomeCategoriesList extends GetView<IncomeCategoriesController> {
                 scrollDirection: Axis.vertical,
                 child: Obx(
                   () {
-                    if (controller.incomeCategoriesList.isEmpty) {
+                    if (controller.expenseCategoriesList.isEmpty) {
                       return Center(
-                        child: Text("No income categories"),
+                        child: Text("No expense categories"),
                       );
                     } else {
                       return Column(
@@ -52,10 +52,10 @@ class IncomeCategoriesList extends GetView<IncomeCategoriesController> {
                         children: <Widget>[
                           // Expanded(child: SizedBox()),
                           SizedBox(height: 80.w),
-                          TitleOfSub(title: "Pick income category: "),
+                          TitleOfSub(title: "Pick expense category: "),
                           ListOfCategories(
-                            incomeCategoriesList:
-                                controller.incomeCategoriesList,
+                            expenseCategoriesList:
+                                controller.expenseCategoriesList,
                             accountId: accountId,
                             userId: userId,
                           ),
@@ -112,12 +112,12 @@ class TitleOfSub extends StatelessWidget {
 class ListOfCategories extends StatelessWidget {
   const ListOfCategories({
     Key? key,
-    required this.incomeCategoriesList,
+    required this.expenseCategoriesList,
     required this.accountId,
     required this.userId,
   });
 
-  final List<IncomeCategory> incomeCategoriesList;
+  final List<ExpenseCategory> expenseCategoriesList;
   final String accountId;
   final String userId;
 
@@ -127,7 +127,7 @@ class ListOfCategories extends StatelessWidget {
       scrollDirection: Axis.vertical,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      itemCount: incomeCategoriesList.length,
+      itemCount: expenseCategoriesList.length,
       itemBuilder: (context, index) {
         return Stack(
           children: [
@@ -135,7 +135,7 @@ class ListOfCategories extends StatelessWidget {
               contentPadding:
                   EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.w),
               title: Text(
-                incomeCategoriesList[index].data!.categoryName!,
+                expenseCategoriesList[index].data!.categoryName!,
                 style: AppFont.body3(
                   fontSize: 16.sp,
                 ),
@@ -169,14 +169,14 @@ class ListOfCategories extends StatelessWidget {
                     onTap: () {
                       // Get.to(PlaceDetails(), arguments: place);
                       Get.put(
-                        AddIncomePageController(
+                        AddExpensePageController(
                           userId: userId,
-                          incomeCategoryId: incomeCategoriesList[index].id!,
+                          expenseCategoryId: expenseCategoriesList[index].id!,
                           accountId: accountId,
                         ),
                       );
                       Get.to(
-                        () => const AddIncomePage(),
+                        () => const AddExpensePage(),
                       );
                     },
                   ),

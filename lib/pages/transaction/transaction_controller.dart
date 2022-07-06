@@ -1,9 +1,11 @@
 import 'package:cape_flutter/pages/dashboard/dashboard_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../accounts/models/account.dart';
 import '../../api/api_service.dart';
+import '../../common/views/custom_load_dialog.dart';
 
 class TransactionController extends GetxController {
   final String title = 'Transaction page';

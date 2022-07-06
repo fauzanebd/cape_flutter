@@ -4,6 +4,7 @@ import 'package:cape_flutter/income/model/income.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../../accounts/controller/account_controller.dart';
 import '../../accounts/models/account.dart';
 import '../dashboard/dashboard_controller.dart';
 import '../../api/api_service.dart';
@@ -13,9 +14,13 @@ class HomeController extends GetxController {
       Get.find<DashboardController>();
 
   var isLoading = true.obs;
-  var incomeList = <Income>[].obs;
-  var expenseList = <Expense>[].obs;
-  var accountList = <Account>[].obs;
+  var isAccountEmpty = true.obs;
+  var isIncomeEmpty = true.obs;
+  var isExpenseEmpty = true.obs;
+
+  RxList<Income> incomeList = <Income>[].obs;
+  RxList<Expense> expenseList = <Expense>[].obs;
+  RxList<Account> accountList = <Account>[].obs;
 
   final String title = 'Home page';
   User user = Get.find<DashboardController>().user;
@@ -23,9 +28,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchIncomes(user.uid);
-    fetchExpenses(user.uid);
-    fetchAccounts(user.uid);
+    updateData();
   }
 
   // @override
@@ -33,13 +36,19 @@ class HomeController extends GetxController {
 
   //   super.onReady();
   // }
+  void updateData() {
+    fetchAccounts();
+    fetchIncomes();
+    fetchExpenses();
+  }
 
-  Future<void> fetchIncomes(String userId) async {
+  Future<void> fetchIncomes() async {
     try {
       isLoading(true);
-      var income = await ApiService.fetchIncomes(userId);
+      var income = await ApiService.fetchIncomes(user.uid);
       if (income != null) {
         incomeList.assignAll(income);
+        isIncomeEmpty(false);
       }
     } finally {
       isLoading(false);
@@ -47,12 +56,13 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> fetchExpenses(String userId) async {
+  Future<void> fetchExpenses() async {
     try {
       isLoading(true);
-      var expense = await ApiService.fetchExpenses(userId);
+      var expense = await ApiService.fetchExpenses(user.uid);
       if (expense != null) {
         expenseList.assignAll(expense);
+        isExpenseEmpty(false);
       }
     } finally {
       isLoading(false);
@@ -60,12 +70,13 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> fetchAccounts(String userId) async {
+  Future<void> fetchAccounts() async {
     try {
       isLoading(true);
-      var account = await ApiService.fetchAccounts(userId);
+      var account = await ApiService.fetchAccounts(user.uid);
       if (account != null) {
         accountList.assignAll(account);
+        isAccountEmpty(false);
       }
     } finally {
       isLoading(false);

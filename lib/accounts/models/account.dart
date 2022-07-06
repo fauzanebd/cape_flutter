@@ -38,12 +38,12 @@ class Data {
   });
 
   String? userId;
-  int? accountBalance;
+  String? accountBalance;
   String? accountName;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
         userId: json["user_id"],
-        accountBalance: int.parse(json["account_balance"]),
+        accountBalance: json["account_balance"].toString(),
         accountName: json["account_name"],
       );
 

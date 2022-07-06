@@ -9,14 +9,14 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
+import '../../expense/controller/expense_categories_controller.dart';
+import '../../expense/view/expense_categories.dart';
 import '../../pages/home/home_page.dart';
 import '../controller/account_controller.dart';
+import '../controller/edit_account_controller.dart';
+import 'edit_account.dart';
 
 class AccountDetails extends GetView<AccountController> {
-  String accountName = Get.arguments[0];
-  int accountBalance = Get.arguments[1];
-  String accountId = Get.arguments[2];
-
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(
@@ -26,6 +26,9 @@ class AccountDetails extends GetView<AccountController> {
 
     return GetBuilder<AccountController>(
       builder: (controller) {
+        String accountName = controller.accountName;
+        int accountBalance = controller.accountBalance;
+        String accountId = controller.accountId;
         return ScreenTypeLayout(
           breakpoints: ScreenBreakpoints(
             tablet: 600,
@@ -42,6 +45,13 @@ class AccountDetails extends GetView<AccountController> {
                   backgroundColor: AppColor.red100,
                   onTap: () {
                     // Pick expense category
+                    Get.put(ExpenseCategoriesController(
+                      accountId: accountId,
+                      userId: controller.userId,
+                    ));
+                    Get.to(
+                      () => const ExpenseCategoriesList(),
+                    );
                   },
                 ),
                 SpeedDialChild(
@@ -59,40 +69,94 @@ class AccountDetails extends GetView<AccountController> {
                     );
                   },
                 ),
+                SpeedDialChild(
+                  child: Icon(CupertinoIcons.pencil_circle),
+                  label: "Edit Account",
+                  backgroundColor: AppColor.green100,
+                  onTap: () {
+                    Get.put(EditAccountPageController(
+                      userId: controller.userId,
+                      accountId: accountId,
+                      originalAccountName: accountName,
+                      originalAccountBalance: accountBalance,
+                    ));
+                    Get.to(() => const EditAccountPage());
+                  },
+                ),
+                SpeedDialChild(
+                  child: Icon(CupertinoIcons.delete_simple),
+                  label: "Delete Account",
+                  backgroundColor: AppColor.green100,
+                  onTap: () {
+                    controller.deleteAccount();
+                  },
+                ),
               ],
             ),
             backgroundColor: AppColor.light100,
-            body: SingleChildScrollView(
-              padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  SizedBox(
-                    height: 10.w,
-                  ),
-                  PageHeader(
-                    title: "$accountName",
-                    balance: accountBalance,
-                    icon: Icon(CupertinoIcons.money_dollar_circle_fill),
-                  ),
-                  TitleOfSubElement(
-                    title: "Recent Income",
-                    onSeeAll: () {},
-                  ),
-                  IncomeListTile(
-                    incomeList: controller.incomeList,
-                  ),
-                  TitleOfSubElement(
-                    title: "Recent Expense",
-                    onSeeAll: () {},
-                  ),
-                  ExpenseListTile(
-                    expenseList: controller.expenseList,
-                  ),
-                ],
+            body: RefreshIndicator(
+              onRefresh: () async {
+                await controller.fetchIncomesbyAccountId(
+                    controller.accountId, controller.userId);
+                await controller.fetchExpensesbyAccountId(
+                    controller.accountId, controller.userId);
+              },
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 10.w,
+                    ),
+                    PageHeader(
+                      title: "$accountName",
+                      balance: accountBalance,
+                      icon: Icon(CupertinoIcons.money_dollar_circle_fill),
+                    ),
+                    Obx(
+                      () {
+                        if (controller.incomeList.isEmpty &&
+                            controller.expenseList.isEmpty) {
+                          return Container(
+                            padding: EdgeInsets.only(
+                              right: 10.w,
+                              left: 10.w,
+                              top: 10.w,
+                              bottom: 10.w,
+                            ),
+                            child: Center(
+                              child: Text("No transactions yet",
+                                  style: AppFont.title3(fontSize: 18.sp)),
+                            ),
+                          );
+                        } else {
+                          return Column(
+                            children: <Widget>[
+                              TitleOfSubElement(
+                                title: "Recent Income",
+                                onSeeAll: () {},
+                              ),
+                              IncomeListTile(
+                                incomeList: controller.incomeList,
+                              ),
+                              TitleOfSubElement(
+                                title: "Recent Expense",
+                                onSeeAll: () {},
+                              ),
+                              ExpenseListTile(
+                                expenseList: controller.expenseList,
+                              ),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

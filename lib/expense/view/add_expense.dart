@@ -8,10 +8,10 @@ import 'package:intl/intl.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
 import '../../common/app_font.dart';
-import '../controller/add_income_controller.dart';
+import '../controller/add_expense_controller.dart';
 
-class AddIncomePage extends GetView<AddIncomePageController> {
-  const AddIncomePage({Key? key}) : super(key: key);
+class AddExpensePage extends GetView<AddExpensePageController> {
+  const AddExpensePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +19,32 @@ class AddIncomePage extends GetView<AddIncomePageController> {
       context,
       designSize: Size(375, 812),
     );
-    return GetBuilder<AddIncomePageController>(
+    return GetBuilder<AddExpensePageController>(
       builder: (controller) {
         String accountId = controller.accountId;
         return ScreenTypeLayout(
           breakpoints:
               const ScreenBreakpoints(tablet: 600, desktop: 950, watch: 300),
           mobile: Scaffold(
+            floatingActionButton: SpeedDial(
+              animatedIcon: AnimatedIcons.menu_close,
+              children: [
+                SpeedDialChild(
+                  child: Icon(Icons.image_outlined),
+                  label: "Add Expense from Gallery",
+                  backgroundColor: AppColor.blue100,
+                  onTap: () async {
+                    await controller.pickImageFromGallery();
+                  },
+                ),
+                SpeedDialChild(
+                  child: Icon(Icons.camera_alt_outlined),
+                  label: "Add Expense from camera",
+                  backgroundColor: AppColor.blue100,
+                  onTap: () {},
+                ),
+              ],
+            ),
             backgroundColor: AppColor.light100,
             body: SingleChildScrollView(
               child: Container(
@@ -48,20 +67,23 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                             width: 10.w,
                           ),
                           Text(
-                            "New Income",
+                            "New Expense",
                             style: AppFont.title2(),
                           ),
                         ],
                       ),
+                      SizedBox(
+                        height: 20.w,
+                      ),
                       TextField(
-                        controller: controller.incomeTitleController.value,
+                        controller: controller.expenseTitleController.value,
                         onChanged: (val) {
-                          controller.incomeTitle.value = val;
+                          controller.expenseTitle.value = val;
                         },
                         decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
-                          hintText: 'Income Title',
+                          hintText: 'Expense Title',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -69,14 +91,14 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                       ),
                       SizedBox(height: 20.w),
                       TextField(
-                        controller: controller.incomeAmountController.value,
+                        controller: controller.expenseAmountController.value,
                         onChanged: (val) {
-                          controller.incomeAmount.value = val;
+                          controller.expenseAmount.value = val;
                         },
                         decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
-                          hintText: 'Income Amount',
+                          hintText: 'Expense Amount',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -84,14 +106,14 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                       ),
                       SizedBox(height: 20.w),
                       TextField(
-                        controller: controller.incomeDetailsController.value,
+                        controller: controller.expenseDetailsController.value,
                         onChanged: (val) {
-                          controller.incomeDetails.value = val;
+                          controller.expenseDetails.value = val;
                         },
                         decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
-                          hintText: 'Income Details',
+                          hintText: 'Expense Details',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -108,13 +130,13 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                                 minTime: DateTime(2022, 6, 1),
                                 maxTime: DateTime(2025, 6, 7),
                                 onConfirm: (date) {
-                                  var originDate = controller.incomeDate.value;
+                                  var originDate = controller.expenseDate.value;
                                   var pickedDate = DateTime(
                                     date.year,
                                     date.month,
                                     date.day,
-                                    controller.incomeDate.value.hour,
-                                    controller.incomeDate.value.minute,
+                                    controller.expenseDate.value.hour,
+                                    controller.expenseDate.value.minute,
                                   );
                                   controller.updateDate(pickedDate);
                                 },
@@ -142,7 +164,7 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                           SizedBox(width: 10.w),
                           Text(
                             DateFormat('yyyy-MM-dd')
-                                .format(controller.incomeDate.value),
+                                .format(controller.expenseDate.value),
                             style: AppFont.body1(
                               fontColor: AppColor.dark100,
                             ),
@@ -166,12 +188,12 @@ class AddIncomePage extends GetView<AddIncomePageController> {
                         onPressed: () async {
                           // getting invoice
                           // await reservationDetailsController.goToPaymentPage();
-                          await controller.addIncome(
+                          await controller.addExpense(
                             accountId: accountId,
                           );
                         },
                         child: Text(
-                          'Add Income',
+                          'Add Expense',
                           style: TextStyle(
                             color: AppColor.light100,
                           ),

@@ -44,7 +44,7 @@ class Data {
   String? userId;
   String? expenseTitle;
   String? expenseDetails;
-  int? expenseAmount;
+  String? expenseAmount;
   DateTime? expenseDate;
   String? ecId;
   String? accountId;
@@ -53,7 +53,7 @@ class Data {
         userId: json["user_id"],
         expenseTitle: json["expense_title"],
         expenseDetails: json["expense_details"],
-        expenseAmount: json["expense_amount"],
+        expenseAmount: json["expense_amount"].toString(),
         expenseDate: DateTime.parse(json["expense_date"]),
         ecId: json["ec_id"],
         accountId: json["account_id"],
